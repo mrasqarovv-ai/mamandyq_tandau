@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch index.html for AI assistant and SEO
+      - name: Patch index.html for AI assistant, SEO and branding
         shell: bash
         run: |
           python3 <<'PY'
@@ -31,6 +31,21 @@ jobs:
           if 'assets/ai-assistant.js' not in s:
               s = s.replace('</body>', '<script src="config.js"></script>\n<script src="assets/ai-assistant.js"></script>\n</body>', 1)
 
+          # Brand: keep only “Бағыт” in visible UI.
+          s = s.replace('🧭 Бағыт · Career Navigator', '🧭 Бағыт')
+          s = s.replace('Бағыт · Career Navigator', 'Бағыт')
+          s = s.replace('<span>Career Navigator</span>', '<span>Бағыт</span>')
+          s = s.replace('content="Career Navigator"', 'content="Бағыт"')
+
+          # Homepage headline/subheadline in all three languages.
+          s = s.replace("hero:'Қызығушылықтан — нақты білім маршрутына'", "hero:'Өз бағытыңды тап'")
+          s = s.replace("lead:'Оқушының немесе ата-ананың жауаптарын қызығушылық, қабілет, құндылық, жұмыс стилі, бейіндік пәндер және тарихи грант деректерімен байланыстыратын түсіндірілетін навигатор.'", "lead:'Қызығушылығың мен қабілетіңе сай мамандықты анықтап, оқу бағыты, ЖОО және грант мүмкіндіктерін бір жерден көр.'")
+          s = s.replace("hero:'От интересов — к конкретному образовательному маршруту'", "hero:'Найди своё направление'")
+          s = s.replace("lead:'Навигатор связывает ответы ученика или родителя с интересами, способностями, ценностями, стилем работы, профильными предметами и историческими данными грантов.'", "lead:'Определи профессию по своим интересам и способностям и изучи направления обучения, вузы и возможности гранта в одном месте.'")
+          s = s.replace("hero:'From interests to a concrete education route'", "hero:'Find your direction'")
+          s = s.replace("lead:'The navigator links student or parent answers with interests, abilities, values, work style, profile subjects and historical grant data.'", "lead:'Discover careers that match your interests and abilities, then explore study paths, universities and grant opportunities in one place.'")
+
+          # Search-friendly title and SEO stay intact.
           s = re.sub(r'<title>.*?</title>', '<title>Бағыт — мамандық таңдау және кәсіби бағдар платформасы</title>', s, count=1, flags=re.S)
 
           marker = '<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып'
@@ -49,12 +64,14 @@ jobs:
           <meta name="twitter:title" content="Бағыт — мамандық таңдау платформасы">
           <meta name="twitter:description" content="Қазақстан оқушыларына арналған AI-кәсіби бағдар платформасы.">
           <script type="application/ld+json">
-          {"@context":"https://schema.org","@type":"WebApplication","name":"Бағыт","alternateName":"Career Navigator","url":"https://mrasqarovv-ai.github.io/mamandyq_tandau/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":["kk","ru","en"],"description":"Қазақстан оқушылары мен ата-аналарына мамандық және білім беру бағытын таңдауға көмектесетін кәсіби бағдар платформасы.","isAccessibleForFree":true}
+          {"@context":"https://schema.org","@type":"WebApplication","name":"Бағыт","alternateName":"Bagyt","url":"https://mrasqarovv-ai.github.io/mamandyq_tandau/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":["kk","ru","en"],"description":"Қазақстан оқушылары мен ата-аналарына мамандық және білім беру бағытын таңдауға көмектесетін кәсіби бағдар платформасы.","isAccessibleForFree":true}
           </script>"""
               s = s.replace('</title>', '</title>\n' + seo, 1)
 
           if s != old:
               p.write_text(s, encoding='utf-8')
+          else:
+              print('index.html already up to date')
           PY
 
       - name: Commit patch
@@ -67,5 +84,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Add SEO metadata to Career Navigator"
+          git commit -m "Update Bagyt branding and homepage copy"
           git push
