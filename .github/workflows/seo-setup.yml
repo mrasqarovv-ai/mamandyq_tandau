@@ -1,0 +1,101 @@
+name: SEO setup
+
+on:
+  push:
+    paths:
+      - '.github/workflows/seo-setup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  seo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Add SEO metadata and search-engine files
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          base = 'https://mrasqarovv-ai.github.io/mamandyq_tandau/'
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Replace the existing title with a search-friendly title.
+          s = re.sub(r'<title>.*?</title>', '<title>Бағыт — мамандық таңдау және кәсіби бағдар платформасы</title>', s, count=1, flags=re.S)
+
+          seo = '''
+<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып оқушылары мен ата-аналарына мамандық, білім беру бағдарламасы, ЖОО және грант деректері бойынша бағыт беретін AI-кәсіби бағдар платформасы.">
+<meta name="keywords" content="мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО, грант, Қазақстан, мамандық тесті, кәсіп таңдау, абитуриент">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<link rel="canonical" href="https://mrasqarovv-ai.github.io/mamandyq_tandau/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="kk_KZ">
+<meta property="og:title" content="Бағыт — мамандық таңдау және кәсіби бағдар платформасы">
+<meta property="og:description" content="Мамандық, білім беру бағдарламасы, ЖОО және тарихи грант көрсеткіштері бойынша бағыт беретін Қазақстан оқушыларына арналған платформа.">
+<meta property="og:url" content="https://mrasqarovv-ai.github.io/mamandyq_tandau/">
+<meta property="og:site_name" content="Бағыт">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Бағыт — мамандық таңдау платформасы">
+<meta name="twitter:description" content="Қазақстан оқушыларына арналған AI-кәсіби бағдар платформасы.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Бағыт",
+  "alternateName": "Career Navigator",
+  "url": "https://mrasqarovv-ai.github.io/mamandyq_tandau/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "inLanguage": ["kk", "ru", "en"],
+  "description": "Қазақстан оқушылары мен ата-аналарына мамандық және білім беру бағытын таңдауға көмектесетін кәсіби бағдар платформасы.",
+  "isAccessibleForFree": true
+}
+</script>
+'''.strip()
+
+          # Make the workflow idempotent.
+          if '<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып' not in s:
+              m = re.search(r'</title>', s, flags=re.I)
+              if not m:
+                  raise SystemExit('Could not find </title> in index.html')
+              pos = m.end()
+              s = s[:pos] + '\n' + seo + s[pos:]
+
+          p.write_text(s, encoding='utf-8')
+
+          Path('robots.txt').write_text(
+              'User-agent: *\nAllow: /\n\nSitemap: ' + base + 'sitemap.xml\n',
+              encoding='utf-8'
+          )
+
+          Path('sitemap.xml').write_text(
+              '''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://mrasqarovv-ai.github.io/mamandyq_tandau/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+''',
+              encoding='utf-8'
+          )
+
+      - name: Commit SEO changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html robots.txt sitemap.xml
+          if git diff --cached --quiet; then
+            echo "No SEO changes needed"
+          else
+            git commit -m "Add SEO metadata, sitemap and robots"
+            git push
+          fi
