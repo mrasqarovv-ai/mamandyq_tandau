@@ -1,0 +1,62 @@
+name: Deploy AI Worker
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - '.github/workflows/deploy-worker.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Deploy Cloudflare Worker
+        id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          wranglerVersion: '4'
+          command: deploy
+          secrets: |
+            OPENAI_API_KEY
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Update frontend Worker URL
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, re
+          url = os.environ.get('DEPLOYMENT_URL','').strip().rstrip('/')
+          if not url.startswith('https://'):
+              raise SystemExit(f'Invalid deployment URL: {url!r}')
+          p = pathlib.Path('config.js')
+          text = p.read_text(encoding='utf-8')
+          text = re.sub(r'AI_API_URL:\s*"[^"]*"', f'AI_API_URL: "{url}/chat"', text)
+          p.write_text(text, encoding='utf-8')
+          print('Frontend API URL:', url + '/chat')
+          PY
+
+      - name: Commit frontend configuration
+        run: |
+          if git diff --quiet -- config.js; then
+            echo 'config.js is already up to date.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add config.js
+          git commit -m 'Connect frontend to deployed AI Worker'
+          git push
