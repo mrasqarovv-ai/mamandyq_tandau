@@ -10,13 +10,15 @@ permissions:
 
 jobs:
   patch:
-    if: github.actor != 'github-actions[bot]'
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Patch index.html for AI assistant and SEO
-        shell: python
+        shell: bash
         run: |
+          python3 <<'PY'
           from pathlib import Path
           import re
 
@@ -24,55 +26,39 @@ jobs:
           s = p.read_text(encoding='utf-8')
           old = s
 
-          # AI assistant assets
-          s = s.replace('<title>Бағыт · Career Navigator Neomorph Night v11</title>', '<title>Бағыт · Career Navigator AI v12</title>')
           if 'assets/ai-assistant.css' not in s:
               s = s.replace('</head>', '<link rel="stylesheet" href="assets/ai-assistant.css">\n</head>', 1)
           if 'assets/ai-assistant.js' not in s:
               s = s.replace('</body>', '<script src="config.js"></script>\n<script src="assets/ai-assistant.js"></script>\n</body>', 1)
 
-          # Search-friendly title
           s = re.sub(r'<title>.*?</title>', '<title>Бағыт — мамандық таңдау және кәсіби бағдар платформасы</title>', s, count=1, flags=re.S)
 
-          seo_marker = '<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып'
-          if seo_marker not in s:
-              seo = '''
-<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып оқушылары мен ата-аналарына мамандық, білім беру бағдарламасы, ЖОО және грант деректері бойынша бағыт беретін AI-кәсіби бағдар платформасы.">
-<meta name="keywords" content="мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО, грант, Қазақстан, мамандық тесті, кәсіп таңдау, абитуриент">
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-<link rel="canonical" href="https://mrasqarovv-ai.github.io/mamandyq_tandau/">
-<meta property="og:type" content="website">
-<meta property="og:locale" content="kk_KZ">
-<meta property="og:title" content="Бағыт — мамандық таңдау және кәсіби бағдар платформасы">
-<meta property="og:description" content="Мамандық, білім беру бағдарламасы, ЖОО және тарихи грант көрсеткіштері бойынша бағыт беретін Қазақстан оқушыларына арналған платформа.">
-<meta property="og:url" content="https://mrasqarovv-ai.github.io/mamandyq_tandau/">
-<meta property="og:site_name" content="Бағыт">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Бағыт — мамандық таңдау платформасы">
-<meta name="twitter:description" content="Қазақстан оқушыларына арналған AI-кәсіби бағдар платформасы.">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Бағыт",
-  "alternateName": "Career Navigator",
-  "url": "https://mrasqarovv-ai.github.io/mamandyq_tandau/",
-  "applicationCategory": "EducationalApplication",
-  "operatingSystem": "Web",
-  "inLanguage": ["kk", "ru", "en"],
-  "description": "Қазақстан оқушылары мен ата-аналарына мамандық және білім беру бағытын таңдауға көмектесетін кәсіби бағдар платформасы.",
-  "isAccessibleForFree": true
-}
-</script>
-'''.strip()
+          marker = '<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып'
+          if marker not in s:
+              seo = """<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып оқушылары мен ата-аналарына мамандық, білім беру бағдарламасы, ЖОО және грант деректері бойынша бағыт беретін AI-кәсіби бағдар платформасы.">
+          <meta name="keywords" content="мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО, грант, Қазақстан, мамандық тесті, кәсіп таңдау, абитуриент">
+          <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+          <link rel="canonical" href="https://mrasqarovv-ai.github.io/mamandyq_tandau/">
+          <meta property="og:type" content="website">
+          <meta property="og:locale" content="kk_KZ">
+          <meta property="og:title" content="Бағыт — мамандық таңдау және кәсіби бағдар платформасы">
+          <meta property="og:description" content="Мамандық, білім беру бағдарламасы, ЖОО және тарихи грант көрсеткіштері бойынша бағыт беретін Қазақстан оқушыларына арналған платформа.">
+          <meta property="og:url" content="https://mrasqarovv-ai.github.io/mamandyq_tandau/">
+          <meta property="og:site_name" content="Бағыт">
+          <meta name="twitter:card" content="summary">
+          <meta name="twitter:title" content="Бағыт — мамандық таңдау платформасы">
+          <meta name="twitter:description" content="Қазақстан оқушыларына арналған AI-кәсіби бағдар платформасы.">
+          <script type="application/ld+json">
+          {"@context":"https://schema.org","@type":"WebApplication","name":"Бағыт","alternateName":"Career Navigator","url":"https://mrasqarovv-ai.github.io/mamandyq_tandau/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":["kk","ru","en"],"description":"Қазақстан оқушылары мен ата-аналарына мамандық және білім беру бағытын таңдауға көмектесетін кәсіби бағдар платформасы.","isAccessibleForFree":true}
+          </script>"""
               s = s.replace('</title>', '</title>\n' + seo, 1)
 
           if s != old:
               p.write_text(s, encoding='utf-8')
-          else:
-              print('index.html already upgraded; nothing to patch')
+          PY
 
       - name: Commit patch
+        shell: bash
         run: |
           if git diff --quiet; then
             echo "No changes"
