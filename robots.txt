@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mrasqarovv-ai.github.io/mamandyq_tandau/sitemap.xml
