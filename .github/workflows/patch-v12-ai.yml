@@ -1,0 +1,43 @@
+name: Upgrade Career Navigator to v12 AI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index.html for AI assistant
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = s
+          s = s.replace('<title>Бағыт · Career Navigator Neomorph Night v11</title>', '<title>Бағыт · Career Navigator AI v12</title>')
+          if 'assets/ai-assistant.css' not in s:
+              s = s.replace('</head>', '<link rel="stylesheet" href="assets/ai-assistant.css">\n</head>', 1)
+          if 'assets/ai-assistant.js' not in s:
+              s = s.replace('</body>', '<script src="config.js"></script>\n<script src="assets/ai-assistant.js"></script>\n</body>', 1)
+          if s != old:
+              p.write_text(s, encoding='utf-8')
+          else:
+              print('index.html already upgraded; nothing to patch')
+      - name: Commit patch
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Upgrade site to Career Navigator AI v12"
+          git push
