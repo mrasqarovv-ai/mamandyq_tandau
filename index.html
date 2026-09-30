@@ -2,7 +2,7 @@
 <html lang="kk">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#eef4e9"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Career Navigator">
-<title>Бағыт · Career Navigator Neomorph Night v11</title>
+<title>Бағыт · Career Navigator AI v12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -698,6 +698,7 @@ header #nav{display:none!important}
 @media(prefers-reduced-motion:reduce){#burgerMenu.open,.burgerPanel{animation:none!important}}
 </style>
 
+<link rel="stylesheet" href="assets/ai-assistant.css">
 </head><body>
 <header><div class="top"><div class="brand" onclick="go('home')">🧭 Бағыт · Career Navigator</div><div class="spacer"></div><div class="headerActions"><button id="themeToggle" class="iconControl" type="button" onclick="toggleTheme()" aria-label="Түнгі режим">🌙</button><select id="langSel" aria-label="Тіл"><option value="kk">Қазақша</option><option value="ru">Русский</option><option value="en">English</option></select><button id="menuToggle" class="iconControl" type="button" onclick="toggleBurger()" aria-label="Мәзір" aria-expanded="false"><span class="burgerLines"><i></i></span></button></div></div></header><div id="burgerMenu" onclick="if(event.target===this)toggleBurger(false)"><aside class="burgerPanel" role="dialog" aria-modal="true" aria-label="Навигация"><div class="burgerHead"><div class="burgerHeadTitle"><b id="burgerTitle">Бөлімдер</b><span>Career Navigator</span></div><button class="iconControl" type="button" onclick="toggleBurger(false)" aria-label="Жабу">×</button></div><nav id="nav"></nav><div class="burgerFoot" id="burgerFoot">Бағыт · Career Navigator</div></aside></div>
 <main>
@@ -831,4 +832,6 @@ function renderAll(){document.documentElement.lang=app.lang;$('langSel').value=a
 $('langSel').addEventListener('change',e=>{app.lang=e.target.value;localStorage.setItem('cn6_lang',app.lang);renderAll()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')toggleBurger(false)});
 renderAll();
-</script></body></html>
+</script><script src="config.js"></script>
+<script src="assets/ai-assistant.js"></script>
+</body></html>
