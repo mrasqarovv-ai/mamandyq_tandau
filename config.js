@@ -37,8 +37,6 @@ window.MAMANDYQ_CONFIG = {
   setMeta('meta[name="twitter:title"]', 'content', 'Бағыт — мамандық таңдау тесті және кәсіби бағдар');
   setMeta('meta[name="twitter:description"]', 'content', 'Мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО және грант мүмкіндіктері.');
 
-  // Табиғи SEO мәтіні: кілт сөздерді жасырып қоюдың орнына,
-  // қолданушыға пайдалы түсіндірме ретінде басты бетте көрсетіледі.
   function ensureSeoBlock() {
     const home = document.getElementById('home');
     if (!home || document.getElementById('seo-guide')) return;
@@ -63,10 +61,39 @@ window.MAMANDYQ_CONFIG = {
 
   ensureSeoBlock();
 
-  // Басты бет қайта рендерленсе, SEO блогын қайта қосамыз.
   const observer = new MutationObserver(() => {
     const home = document.getElementById('home');
     if (home && !document.getElementById('seo-guide')) ensureSeoBlock();
   });
   if (document.body) observer.observe(document.body, { childList: true, subtree: true });
+})();
+
+// Feedback card discoverability: move it near the top of the result page.
+(function () {
+  function promoteFeedback() {
+    const result = document.getElementById('result');
+    const card = document.getElementById('bagyt-feedback');
+    if (!result || !card) return;
+
+    const note = result.querySelector('.note');
+    if (note && card.previousElementSibling !== note) {
+      note.insertAdjacentElement('afterend', card);
+    } else if (!note && result.firstElementChild && card !== result.firstElementChild.nextElementSibling) {
+      result.firstElementChild.insertAdjacentElement('afterend', card);
+    }
+
+    card.classList.add('bagyt-feedback-prominent');
+    card.setAttribute('aria-label', 'Бағыт кері байланысы');
+  }
+
+  const style = document.createElement('style');
+  style.textContent = '.bagyt-feedback-prominent{border:2px solid var(--ac)!important;box-shadow:0 8px 24px rgba(0,0,0,.08)}';
+  document.head.appendChild(style);
+
+  const feedbackObserver = new MutationObserver(function () {
+    window.setTimeout(promoteFeedback, 0);
+  });
+
+  if (document.body) feedbackObserver.observe(document.body, { childList: true, subtree: true });
+  window.setTimeout(promoteFeedback, 0);
 })();
