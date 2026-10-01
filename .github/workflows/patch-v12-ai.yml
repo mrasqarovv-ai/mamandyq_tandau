@@ -37,7 +37,7 @@ jobs:
           s = s.replace('<span>Career Navigator</span>', '<span>Бағыт</span>')
           s = s.replace('content="Career Navigator"', 'content="Бағыт"')
 
-          # Homepage headline/subheadline in all three languages.
+          # Homepage headline/subheadline.
           s = s.replace("hero:'Қызығушылықтан — нақты білім маршрутына'", "hero:'Өз бағытыңды тап'")
           s = s.replace("lead:'Оқушының немесе ата-ананың жауаптарын қызығушылық, қабілет, құндылық, жұмыс стилі, бейіндік пәндер және тарихи грант деректерімен байланыстыратын түсіндірілетін навигатор.'", "lead:'Қызығушылығың мен қабілетіңе сай мамандықты анықтап, оқу бағыты, ЖОО және грант мүмкіндіктерін бір жерден көр.'")
           s = s.replace("hero:'От интересов — к конкретному образовательному маршруту'", "hero:'Найди своё направление'")
@@ -45,28 +45,32 @@ jobs:
           s = s.replace("hero:'From interests to a concrete education route'", "hero:'Find your direction'")
           s = s.replace("lead:'The navigator links student or parent answers with interests, abilities, values, work style, profile subjects and historical grant data.'", "lead:'Discover careers that match your interests and abilities, then explore study paths, universities and grant opportunities in one place.'")
 
-          # Search-friendly title and SEO stay intact.
-          s = re.sub(r'<title>.*?</title>', '<title>Бағыт — мамандық таңдау және кәсіби бағдар платформасы</title>', s, count=1, flags=re.S)
+          # Useful visible wording that also tells Google what the product does.
+          s = s.replace("who:'Сауалнаманы кім толтырады?'", "who:'Кәсіби бағдар сауалнамасын кім толтырады?'")
+          s = s.replace("start:'Сауалнаманы бастау'", "start:'Кәсіби бағдар тестін бастау'")
+          s = s.replace("who:'Кто заполняет опрос?'", "who:'Кто проходит тест профориентации?'")
+          s = s.replace("start:'Начать опрос'", "start:'Начать тест профориентации'")
+          s = s.replace("who:'Who is completing the survey?'", "who:'Who is taking the career guidance test?'")
+          s = s.replace("start:'Start survey'", "start:'Start career guidance test'")
 
-          marker = '<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып'
-          if marker not in s:
-              seo = """<meta name="description" content="Бағыт — Қазақстандағы 9–11 сынып оқушылары мен ата-аналарына мамандық, білім беру бағдарламасы, ЖОО және грант деректері бойынша бағыт беретін AI-кәсіби бағдар платформасы.">
-          <meta name="keywords" content="мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО, грант, Қазақстан, мамандық тесті, кәсіп таңдау, абитуриент">
-          <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-          <link rel="canonical" href="https://mrasqarovv-ai.github.io/mamandyq_tandau/">
-          <meta property="og:type" content="website">
-          <meta property="og:locale" content="kk_KZ">
-          <meta property="og:title" content="Бағыт — мамандық таңдау және кәсіби бағдар платформасы">
-          <meta property="og:description" content="Мамандық, білім беру бағдарламасы, ЖОО және тарихи грант көрсеткіштері бойынша бағыт беретін Қазақстан оқушыларына арналған платформа.">
-          <meta property="og:url" content="https://mrasqarovv-ai.github.io/mamandyq_tandau/">
-          <meta property="og:site_name" content="Бағыт">
-          <meta name="twitter:card" content="summary">
-          <meta name="twitter:title" content="Бағыт — мамандық таңдау платформасы">
-          <meta name="twitter:description" content="Қазақстан оқушыларына арналған AI-кәсіби бағдар платформасы.">
-          <script type="application/ld+json">
-          {"@context":"https://schema.org","@type":"WebApplication","name":"Бағыт","alternateName":"Bagyt","url":"https://mrasqarovv-ai.github.io/mamandyq_tandau/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":["kk","ru","en"],"description":"Қазақстан оқушылары мен ата-аналарына мамандық және білім беру бағытын таңдауға көмектесетін кәсіби бағдар платформасы.","isAccessibleForFree":true}
-          </script>"""
-              s = s.replace('</title>', '</title>\n' + seo, 1)
+          # Search-focused metadata. Google does not rely on meta keywords alone,
+          # so the same topics also appear naturally in visible interface text above.
+          s = re.sub(r'<title>.*?</title>', '<title>Бағыт — мамандық таңдау тесті, кәсіби бағдар, ЖОО және грант</title>', s, count=1, flags=re.S)
+          s = re.sub(r'<meta name="description" content="[^"]*">', '<meta name="description" content="Бағыт — Қазақстан оқушыларына арналған мамандық таңдау және кәсіби бағдар платформасы. Мамандық таңдау тестін өтіп, бейіндік пәндер, ҰБТ, білім беру бағдарламалары, ЖОО және грант мүмкіндіктерін зерттеңіз.">', s, count=1)
+          s = re.sub(r'<meta name="keywords" content="[^"]*">', '<meta name="keywords" content="мамандық таңдау, мамандық таңдау тесті, кәсіби бағдар, кәсіби бағдар тесті, профориентация, ҰБТ, ҰБТ мамандық таңдау, ЖОО, университет таңдау, грант, грантқа түсу, білім беру бағдарламасы, Қазақстан, 9 сынып мамандық таңдау, 10 сынып мамандық таңдау, 11 сынып мамандық таңдау, абитуриент">', s, count=1)
+          s = re.sub(r'<meta property="og:title" content="[^"]*">', '<meta property="og:title" content="Бағыт — мамандық таңдау тесті және кәсіби бағдар">', s, count=1)
+          s = re.sub(r'<meta property="og:description" content="[^"]*">', '<meta property="og:description" content="Мамандық таңдау тесті, кәсіби бағдар, ҰБТ, ЖОО және грант мүмкіндіктері — Қазақстан оқушыларына арналған бір платформада.">', s, count=1)
+          s = re.sub(r'<meta name="twitter:title" content="[^"]*">', '<meta name="twitter:title" content="Бағыт — мамандық таңдау тесті және кәсіби бағдар">', s, count=1)
+          s = re.sub(r'<meta name="twitter:description" content="[^"]*">', '<meta name="twitter:description" content="Мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО және грант мүмкіндіктері.">', s, count=1)
+
+          # Keep structured data search-friendly.
+          s = re.sub(
+              r'<script type="application/ld\+json">.*?</script>',
+              '<script type="application/ld+json">\n{"@context":"https://schema.org","@type":"WebApplication","name":"Бағыт","alternateName":"Bagyt","url":"https://mrasqarovv-ai.github.io/mamandyq_tandau/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":["kk","ru","en"],"description":"Қазақстан оқушыларына мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО және грант мүмкіндіктерін зерттеуге көмектесетін платформа.","keywords":"мамандық таңдау, мамандық таңдау тесті, кәсіби бағдар, кәсіби бағдар тесті, ҰБТ, ЖОО, грант, Қазақстан","isAccessibleForFree":true}\n</script>',
+              s,
+              count=1,
+              flags=re.S
+          )
 
           if s != old:
               p.write_text(s, encoding='utf-8')
@@ -84,5 +88,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Update Bagyt branding and homepage copy"
+          git commit -m "Improve Bagyt SEO for career guidance searches"
           git push
