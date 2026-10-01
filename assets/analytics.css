@@ -1,0 +1,39 @@
+/* Бағыт analytics / feedback UI */
+.bagyt-privacy-note{
+  display:flex;align-items:flex-start;gap:9px;max-width:760px;margin:0 auto 18px;
+  padding:10px 13px;border:1px solid var(--bd);border-radius:14px;background:var(--card);
+  color:var(--mu);font-size:.86rem;line-height:1.45;box-shadow:var(--shadow)
+}
+.bagyt-privacy-note>span:first-child{flex:0 0 auto}
+.bagyt-feedback{margin-top:22px!important}
+.bagyt-feedback fieldset{border:0;padding:0;margin:18px 0}
+.bagyt-feedback legend{font-weight:700;margin-bottom:9px;color:var(--tx)}
+.bagyt-rating{display:flex;gap:8px;flex-wrap:wrap}
+.bagyt-rating label,.bagyt-option{cursor:pointer}
+.bagyt-rating input,.bagyt-option input{position:absolute;opacity:0;pointer-events:none}
+.bagyt-rating span{
+  display:grid;place-items:center;width:46px;height:44px;border:1px solid var(--bd);
+  border-radius:12px;background:var(--card);color:var(--tx);font-weight:750;transition:.16s ease
+}
+.bagyt-rating input:checked+span{background:var(--ac);border-color:var(--ac);color:#fff;transform:translateY(-1px)}
+.bagyt-options{display:flex;gap:8px;flex-wrap:wrap}
+.bagyt-option span{
+  display:inline-block;padding:9px 12px;border:1px solid var(--bd);border-radius:12px;
+  background:var(--card);color:var(--tx);transition:.16s ease
+}
+.bagyt-option input:checked+span{border-color:var(--ac);background:var(--ac2);color:var(--ac);font-weight:700}
+.bagyt-comment{display:grid;gap:7px;margin:18px 0;color:var(--tx);font-weight:700}
+.bagyt-comment textarea{
+  width:100%;resize:vertical;min-height:92px;padding:11px 12px;border:1px solid var(--bd);
+  border-radius:12px;background:var(--card);color:var(--tx);font:inherit;font-weight:400
+}
+.bagyt-comment textarea:focus{outline:2px solid color-mix(in srgb,var(--ac) 28%,transparent);border-color:var(--ac)}
+.bagyt-feedback-success{padding:12px 14px;border-radius:12px;background:var(--okbg);color:var(--ok);font-weight:700}
+#bagyt-feedback-status{margin:9px 0 0}
+@media(max-width:760px){
+  .bagyt-privacy-note{margin:0 0 14px;max-width:none}
+  .bagyt-rating{display:grid;grid-template-columns:repeat(5,1fr)}
+  .bagyt-rating span{width:100%}
+  .bagyt-options{display:grid;grid-template-columns:1fr}
+  .bagyt-option span{display:block;width:100%}
+}
