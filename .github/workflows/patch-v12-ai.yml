@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch index.html for AI assistant, SEO and branding
+      - name: Patch index.html for AI, analytics, SEO and branding
         shell: bash
         run: |
           python3 <<'PY'
@@ -28,8 +28,12 @@ jobs:
 
           if 'assets/ai-assistant.css' not in s:
               s = s.replace('</head>', '<link rel="stylesheet" href="assets/ai-assistant.css">\n</head>', 1)
+          if 'assets/analytics.css' not in s:
+              s = s.replace('</head>', '<link rel="stylesheet" href="assets/analytics.css">\n</head>', 1)
           if 'assets/ai-assistant.js' not in s:
               s = s.replace('</body>', '<script src="config.js"></script>\n<script src="assets/ai-assistant.js"></script>\n</body>', 1)
+          if 'assets/analytics.js' not in s:
+              s = s.replace('</body>', '<script src="assets/analytics.js"></script>\n</body>', 1)
 
           # Brand: keep only “Бағыт” in visible UI.
           s = s.replace('🧭 Бағыт · Career Navigator', '🧭 Бағыт')
@@ -88,5 +92,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Improve Bagyt SEO for career guidance searches"
+          git commit -m "Enable Bagyt analytics and feedback"
           git push
