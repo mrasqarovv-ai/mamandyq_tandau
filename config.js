@@ -1,10 +1,12 @@
-// Бұл файлда ҚҰПИЯ кілт жоқ. Мұнда тек браузер қосылатын Worker адресі тұрады.
+// Бұл файлда құпия server key жоқ. Browser-ға арналған public/publishable баптаулар ғана бар.
 window.MAMANDYQ_CONFIG = {
-  AI_API_URL: "https://mamandyq-ai.mr-asqarovv.workers.dev/chat"
+  AI_API_URL: "https://mamandyq-ai.mr-asqarovv.workers.dev/chat",
+  SUPABASE_URL: "https://fmgcrhghunpyafghdzfp.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_X58QoClreM9QT0_UrQdudQ_uHjXsdR-"
 };
 
 // SEO enhancement for Google and other search engines.
-// Маңызды: бұл жерде API key немесе басқа құпия дерек жоқ.
+// Маңызды: бұл жерде secret/service-role API key немесе басқа құпия дерек жоқ.
 (function () {
   const title = 'Бағыт — мамандық таңдау тесті, кәсіби бағдар, ЖОО және грант';
   const description = 'Бағыт — Қазақстан оқушыларына арналған мамандық таңдау және кәсіби бағдар платформасы. Мамандық таңдау тестін өтіп, бейіндік пәндер, ҰБТ, білім беру бағдарламалары, ЖОО және грант мүмкіндіктерін зерттеңіз.';
