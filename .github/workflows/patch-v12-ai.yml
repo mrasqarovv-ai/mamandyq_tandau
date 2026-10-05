@@ -1,4 +1,4 @@
-name: Upgrade Career Navigator to v12 AI
+name: Upgrade Bagyt goal-first experience
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch index.html for AI, analytics, SEO and branding
+      - name: Patch index.html for goal planner, AI, analytics and SEO
         shell: bash
         run: |
           python3 <<'PY'
@@ -26,55 +26,66 @@ jobs:
           s = p.read_text(encoding='utf-8')
           old = s
 
+          # Core add-ons. Goal planner is loaded before analytics so analytics can wrap the final go() function.
           if 'assets/ai-assistant.css' not in s:
               s = s.replace('</head>', '<link rel="stylesheet" href="assets/ai-assistant.css">\n</head>', 1)
           if 'assets/analytics.css' not in s:
               s = s.replace('</head>', '<link rel="stylesheet" href="assets/analytics.css">\n</head>', 1)
+          if 'config.js' not in s:
+              s = s.replace('</body>', '<script src="config.js"></script>\n</body>', 1)
           if 'assets/ai-assistant.js' not in s:
-              s = s.replace('</body>', '<script src="config.js"></script>\n<script src="assets/ai-assistant.js"></script>\n</body>', 1)
+              s = s.replace('</body>', '<script src="assets/ai-assistant.js"></script>\n</body>', 1)
+          if 'assets/goal-planner.js' not in s:
+              s = s.replace('</body>', '<script src="assets/goal-planner.js"></script>\n</body>', 1)
           if 'assets/analytics.js' not in s:
               s = s.replace('</body>', '<script src="assets/analytics.js"></script>\n</body>', 1)
 
-          # Brand: keep only “Бағыт” in visible UI.
+          # If scripts already existed in a different order, normalize the bottom block.
+          for tag in [
+              '<script src="config.js"></script>',
+              '<script src="assets/ai-assistant.js"></script>',
+              '<script src="assets/goal-planner.js"></script>',
+              '<script src="assets/analytics.js"></script>'
+          ]:
+              s = s.replace(tag, '')
+          bottom = ('<script src="config.js"></script>\n'
+                    '<script src="assets/ai-assistant.js"></script>\n'
+                    '<script src="assets/goal-planner.js"></script>\n'
+                    '<script src="assets/analytics.js"></script>\n')
+          s = s.replace('</body>', bottom + '</body>', 1)
+
+          # Brand.
           s = s.replace('🧭 Бағыт · Career Navigator', '🧭 Бағыт')
           s = s.replace('Бағыт · Career Navigator', 'Бағыт')
           s = s.replace('<span>Career Navigator</span>', '<span>Бағыт</span>')
-          s = s.replace('content="Career Navigator"', 'content="Бағыт"')
 
-          # Homepage headline/subheadline.
-          s = s.replace("hero:'Қызығушылықтан — нақты білім маршрутына'", "hero:'Өз бағытыңды тап'")
-          s = s.replace("lead:'Оқушының немесе ата-ананың жауаптарын қызығушылық, қабілет, құндылық, жұмыс стилі, бейіндік пәндер және тарихи грант деректерімен байланыстыратын түсіндірілетін навигатор.'", "lead:'Қызығушылығың мен қабілетіңе сай мамандықты анықтап, оқу бағыты, ЖОО және грант мүмкіндіктерін бір жерден көр.'")
-          s = s.replace("hero:'От интересов — к конкретному образовательному маршруту'", "hero:'Найди своё направление'")
-          s = s.replace("lead:'Навигатор связывает ответы ученика или родителя с интересами, способностями, ценностями, стилем работы, профильными предметами и историческими данными грантов.'", "lead:'Определи профессию по своим интересам и способностям и изучи направления обучения, вузы и возможности гранта в одном месте.'")
-          s = s.replace("hero:'From interests to a concrete education route'", "hero:'Find your direction'")
-          s = s.replace("lead:'The navigator links student or parent answers with interests, abilities, values, work style, profile subjects and historical grant data.'", "lead:'Discover careers that match your interests and abilities, then explore study paths, universities and grant opportunities in one place.'")
+          # Base strings remain search-friendly; the goal add-on renders the new home UX.
+          replacements = {
+              "hero:'Өз бағытыңды тап'": "hero:'Өз бағытыңды тап. Оған жету жолын құр.'",
+              "lead:'Қызығушылығың мен қабілетіңе сай мамандықты анықтап, оқу бағыты, ЖОО және грант мүмкіндіктерін бір жерден көр.'": "lead:'Өзіңді таны, мақсатыңды таңда, қазіргі нәтижең мен нысанаңның айырмасын көр және жеке маршрут құр.'",
+              "hero:'Найди своё направление'": "hero:'Найди направление. Построй путь к цели.'",
+              "lead:'Определи профессию по своим интересам и способностям и изучи направления обучения, вузы и возможности гранта в одном месте.'": "lead:'Узнай себя, выбери цель, увидь разницу между текущим результатом и ориентиром и построй личный маршрут.'",
+              "hero:'Find your direction'": "hero:'Find your direction. Build the path to it.'",
+              "lead:'Discover careers that match your interests and abilities, then explore study paths, universities and grant opportunities in one place.'": "lead:'Know yourself, choose a target, see the gap between your current result and the reference, then build a personal route.'"
+          }
+          for a,b in replacements.items():
+              s = s.replace(a,b)
 
-          # Useful visible wording that also tells Google what the product does.
-          s = s.replace("who:'Сауалнаманы кім толтырады?'", "who:'Кәсіби бағдар сауалнамасын кім толтырады?'")
-          s = s.replace("start:'Сауалнаманы бастау'", "start:'Кәсіби бағдар тестін бастау'")
-          s = s.replace("who:'Кто заполняет опрос?'", "who:'Кто проходит тест профориентации?'")
-          s = s.replace("start:'Начать опрос'", "start:'Начать тест профориентации'")
-          s = s.replace("who:'Who is completing the survey?'", "who:'Who is taking the career guidance test?'")
-          s = s.replace("start:'Start survey'", "start:'Start career guidance test'")
+          title = 'Бағыт — мамандық таңдау және мақсатқа жету маршруты'
+          desc = 'Бағыт — 9–11 сынып оқушыларына арналған кәсіби бағдар және білім маршруты платформасы. Өзіңді таны, БББ мен ЖОО мақсатын таңда, ҰБТ нәтижеңді тарихи дерекпен салыстыр және A/B/C жеке әрекет жоспарын құр.'
+          keys = 'мамандық таңдау, кәсіби бағдар, мақсатқа жету, жеке маршрут, қалай түсуге болады, ҰБТ жоспары, ЖОО таңдау, грант, білім беру бағдарламасы, A B C жоспар, оқушы ата-ана салыстыру, Қазақстан'
+          s = re.sub(r'<title>.*?</title>', f'<title>{title}</title>', s, count=1, flags=re.S)
+          s = re.sub(r'<meta name="description" content="[^"]*">', f'<meta name="description" content="{desc}">', s, count=1)
+          s = re.sub(r'<meta name="keywords" content="[^"]*">', f'<meta name="keywords" content="{keys}">', s, count=1)
+          s = re.sub(r'<meta property="og:title" content="[^"]*">', '<meta property="og:title" content="Бағыт — мақсатқа жету жолын құратын кәсіби бағдар платформасы">', s, count=1)
+          s = re.sub(r'<meta property="og:description" content="[^"]*">', f'<meta property="og:description" content="{desc}">', s, count=1)
+          s = re.sub(r'<meta name="twitter:title" content="[^"]*">', '<meta name="twitter:title" content="Бағыт — мақсатқа жету маршруты">', s, count=1)
+          s = re.sub(r'<meta name="twitter:description" content="[^"]*">', '<meta name="twitter:description" content="Өзіңді таны → мақсат таңда → айырманы көр → A/B/C жеке маршрут құр.">', s, count=1)
 
-          # Search-focused metadata. Google does not rely on meta keywords alone,
-          # so the same topics also appear naturally in visible interface text above.
-          s = re.sub(r'<title>.*?</title>', '<title>Бағыт — мамандық таңдау тесті, кәсіби бағдар, ЖОО және грант</title>', s, count=1, flags=re.S)
-          s = re.sub(r'<meta name="description" content="[^"]*">', '<meta name="description" content="Бағыт — Қазақстан оқушыларына арналған мамандық таңдау және кәсіби бағдар платформасы. Мамандық таңдау тестін өтіп, бейіндік пәндер, ҰБТ, білім беру бағдарламалары, ЖОО және грант мүмкіндіктерін зерттеңіз.">', s, count=1)
-          s = re.sub(r'<meta name="keywords" content="[^"]*">', '<meta name="keywords" content="мамандық таңдау, мамандық таңдау тесті, кәсіби бағдар, кәсіби бағдар тесті, профориентация, ҰБТ, ҰБТ мамандық таңдау, ЖОО, университет таңдау, грант, грантқа түсу, білім беру бағдарламасы, Қазақстан, 9 сынып мамандық таңдау, 10 сынып мамандық таңдау, 11 сынып мамандық таңдау, абитуриент">', s, count=1)
-          s = re.sub(r'<meta property="og:title" content="[^"]*">', '<meta property="og:title" content="Бағыт — мамандық таңдау тесті және кәсіби бағдар">', s, count=1)
-          s = re.sub(r'<meta property="og:description" content="[^"]*">', '<meta property="og:description" content="Мамандық таңдау тесті, кәсіби бағдар, ҰБТ, ЖОО және грант мүмкіндіктері — Қазақстан оқушыларына арналған бір платформада.">', s, count=1)
-          s = re.sub(r'<meta name="twitter:title" content="[^"]*">', '<meta name="twitter:title" content="Бағыт — мамандық таңдау тесті және кәсіби бағдар">', s, count=1)
-          s = re.sub(r'<meta name="twitter:description" content="[^"]*">', '<meta name="twitter:description" content="Мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО және грант мүмкіндіктері.">', s, count=1)
-
-          # Keep structured data search-friendly.
           s = re.sub(
               r'<script type="application/ld\+json">.*?</script>',
-              '<script type="application/ld+json">\n{"@context":"https://schema.org","@type":"WebApplication","name":"Бағыт","alternateName":"Bagyt","url":"https://mrasqarovv-ai.github.io/mamandyq_tandau/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":["kk","ru","en"],"description":"Қазақстан оқушыларына мамандық таңдау, кәсіби бағдар, ҰБТ, ЖОО және грант мүмкіндіктерін зерттеуге көмектесетін платформа.","keywords":"мамандық таңдау, мамандық таңдау тесті, кәсіби бағдар, кәсіби бағдар тесті, ҰБТ, ЖОО, грант, Қазақстан","isAccessibleForFree":true}\n</script>',
-              s,
-              count=1,
-              flags=re.S
-          )
+              '<script type="application/ld+json">\n{"@context":"https://schema.org","@type":"WebApplication","name":"Бағыт","alternateName":"Bagyt","url":"https://mrasqarovv-ai.github.io/mamandyq_tandau/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":["kk","ru","en"],"description":"9–11 сынып оқушыларына өзін танудан бастап БББ, ЖОО мақсатын таңдауға және A/B/C жеке білім маршрутын құруға көмектесетін платформа.","keywords":"кәсіби бағдар, мамандық таңдау, мақсат, ҰБТ, жеке маршрут, ЖОО, грант, Қазақстан","isAccessibleForFree":true}\n</script>',
+              s, count=1, flags=re.S)
 
           if s != old:
               p.write_text(s, encoding='utf-8')
@@ -92,5 +103,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Enable Bagyt analytics and feedback"
+          git commit -m "Enable Bagyt goal-first route planner"
           git push
