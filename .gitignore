@@ -13,3 +13,10 @@ worker/node_modules/
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Archive tooling and local development
+__pycache__/
+*.pyc
+.venv/
+.daryn-cache/
+.wrangler/

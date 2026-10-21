@@ -1,0 +1,6 @@
+# Copy to ignored .dev.vars for local development only.
+# Leave unset to test scoring without actually contacting Telegram.
+# BOT_TOKEN=
+# TEACHER_CHAT_ID=
+# TURNSTILE_SECRET_KEY=
+# TELEGRAM_WEBHOOK_SECRET=

@@ -1,13 +1,16 @@
 {
-  "name": "mamandyq-ai-worker",
+  "name": "orleu-results-bot",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "dev": "wrangler dev --local --ip 127.0.0.1 --port 8787 --var ENVIRONMENT:development --var ALLOWED_ORIGINS:http://127.0.0.1:8000",
+    "test": "node --test",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 migrations apply DB --local",
+    "db:remote": "wrangler d1 migrations apply DB --remote"
   },
   "devDependencies": {
-    "wrangler": "^4.36.0"
+    "wrangler": "4.151.3"
   }
 }
