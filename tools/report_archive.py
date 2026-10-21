@@ -7,10 +7,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SUBJECTS = {'mathematics':'Математика','physics':'Физика','chemistry':'Химия',
- 'biology':'Биология','informatics':'Информатика','geography':'География',
- 'history':'Қазақстан тарихы','kazakh':'Қазақ тілі','russian':'Орыс тілі',
- 'english':'Ағылшын тілі','natural-science':'Жаратылыстану','other':'Басқа пәндер'}
+SUBJECTS = {'history':'Қазақстан тарихы'}
 STAGES = {'district':'Аудандық / қалалық','regional':'Облыстық',
  'republican':'Республикалық','unknown':'Нақтыланбаған'}
 
@@ -18,6 +15,8 @@ STAGES = {'district':'Аудандық / қалалық','regional':'Облыс�
 def main():
     archive = json.loads((ROOT/'data/archive.json').read_text())
     documents = archive['documents']
+    if any(record.get('subject') != 'history' for record in documents):
+        raise ValueError('Бұл сайтқа тек Қазақстан тарихы құжаттары енгізіледі.')
     groups = defaultdict(list)
     for record in documents:
         grades = record.get('grades') or ([record['grade']] if record.get('grade') else [None])
@@ -27,7 +26,7 @@ def main():
         [f'{year}–{year+1}' for year in range(2020,2027)], [5,6,7,8],
         ['district','regional','republican'], SUBJECTS)) | set(groups)
     with (ROOT/'data/coverage.csv').open('w',encoding='utf-8-sig',newline='') as handle:
-        writer = csv.writer(handle)
+        writer = csv.writer(handle, lineterminator='\n')
         writer.writerow(['Оқу жылы','Сынып','Кезең','Пән','Тапсырма құжаттары',
             'Жауап/шешім құжаттары','Сұрақтар (тек тексеріліп бөлінген)',
             'Сұрақ саны толық па?','Дереккөз','Мәртебе'])
@@ -43,6 +42,7 @@ def main():
     target = ROOT/'data/sources.json'
     previous = json.loads(target.read_text()) if target.exists() else {}
     target.write_text(json.dumps({'updatedAt':archive['updatedAt'],
+        'scope': {'subjects': ['history']},
         'sources':archive['sources'],
         'documents':[{k:v for k,v in d.items() if k not in {'text','questions'}} for d in documents],
         'unresolved':previous.get('unresolved',[]),

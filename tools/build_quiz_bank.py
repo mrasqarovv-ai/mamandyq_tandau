@@ -10,6 +10,8 @@ def main():
     quizzes = json.loads((ROOT/'data/quizzes.json').read_text())['quizzes']
     keys = json.loads((ROOT/'data/practice-keys.json').read_text())
     for quiz in quizzes:
+        if quiz.get('subject') != 'history':
+            raise ValueError('Only verified Kazakhstan history quizzes may be published.')
         mapping = keys[quiz['id']]
         if set(mapping) != {q['id'] for q in quiz['questions']}:
             raise ValueError(f"Incomplete official key: {quiz['id']}")

@@ -9,8 +9,8 @@
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[char]));
-  const HISTORY_KEY = 'orleu-quiz-history-v1';
-  const ACTIVE_KEY = 'orleu-quiz-active-v1';
+  const HISTORY_KEY = 'orleu-kazakhstan-history-results-v1';
+  const ACTIVE_KEY = 'orleu-kazakhstan-history-active-v1';
   const configuration = window.ORLEU_CONFIG || {};
   let apiBase = '';
   try {
@@ -26,7 +26,7 @@
   function readHistory() {
     try {
       const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-      return Array.isArray(value) ? value.slice(0, 25) : [];
+      return Array.isArray(value) ? value.filter(item => state.quizzes.some(quiz => quiz.id === item.quizId)).slice(0, 25) : [];
     } catch { return []; }
   }
 
@@ -68,7 +68,7 @@
 
   function validQuiz(quiz) {
     return quiz && typeof quiz.id === 'string' && typeof quiz.title === 'string' &&
-      [5, 6, 7, 8].includes(quiz.grade) && Number(quiz.durationMinutes) > 0 &&
+      quiz.subject === 'history' && [5, 6, 7, 8].includes(quiz.grade) && Number(quiz.durationMinutes) > 0 &&
       Array.isArray(quiz.questions) && quiz.questions.length > 0 &&
       quiz.questions.every(question => typeof question.id === 'string' && typeof question.text === 'string' &&
         Number(question.points) > 0 && Array.isArray(question.options) && question.options.length >= 2 &&
@@ -76,7 +76,7 @@
   }
 
   function header() {
-    return '<div class="section-heading"><div><div class="eyebrow muted">БІЛІМІҢДІ ІС ЖҮЗІНДЕ БАЙҚА</div><h2>Өзіңді сынап көр<span>.</span></h2><p>Нақты тапсырмалар. Ресми жауап кілті. Өз қарқыныңдағы дайындық.</p></div><span class="status-pill">Дарынның түпнұсқа материалдары</span></div>';
+    return '<div class="section-heading"><div><div class="eyebrow muted">ҚАЗАҚСТАН ТАРИХЫНАН БІЛІМІҢДІ БАЙҚА</div><h2>Өзіңді сынап көр<span>.</span></h2><p>Дарынның тарих тапсырмалары. Ресми жауап кілті. Өз қарқыныңдағы дайындық.</p></div><span class="status-pill">Дарынның түпнұсқа материалдары</span></div>';
   }
 
   function historyMarkup() {
@@ -87,10 +87,12 @@
 
   function renderHome() {
     removeChallenge();
+    const archiveOnlyGrades = [5, 6, 7, 8].filter(grade => !state.quizzes.some(quiz => quiz.grade === grade));
+    const coverageNote = archiveOnlyGrades.length ? `<p class="quiz-scope-note">${archiveOnlyGrades.join('–')}-сынып материалдарын <a href="#archive">Қазақстан тарихы архивінен</a> қара. Ресми кілті расталмаған топтамаға автоматты баға қойылмайды.</p>` : '';
     root.innerHTML = header() + (state.quizzes.length ? `<div class="quiz-card-grid">${state.quizzes.map(quiz => {
       const max = quiz.questions.reduce((sum, q) => sum + Number(q.points), 0);
-      return `<article class="quiz-start-card"><div class="quiz-card-top"><span class="subject-badge">Жаратылыстану</span><span>${escape(quiz.grade)}-сынып</span></div><h3>${escape(quiz.title)}</h3><p>Түпнұсқаның ${quiz.questions.length} сұрағынан тұратын жаттығу. Жауаптар ресми кілтпен салыстырылады.</p><div class="quiz-card-facts"><span>${quiz.questions.length} сұрақ</span><span>${escape(quiz.durationMinutes)} минут</span><span>${max} балл</span></div><div class="quiz-card-year">${escape(quiz.year)} · ${quiz.language === 'kk' ? 'Қазақша' : quiz.language === 'ru' ? 'Орысша' : 'Түпнұсқа тілінде'}</div><button class="button button-dark" data-quiz-choose="${escape(quiz.id)}">Тестті бастау <span aria-hidden="true">→</span></button></article>`;
-    }).join('')}</div><p class="quiz-mode-notice">${teacherAvailable ? 'Өзіндік дайындықты немесе келісіміңмен нәтижені мұғалімге жіберу режимін таңдауға болады.' : 'Қазір өзіндік дайындық қолжетімді. Мұғалімге Telegram арқылы жіберу әлі қосылмаған.'}</p>` : '<div class="quiz-empty"><h3>Тесттер әзірге жүктелмеді</h3><p>Тек жауап кілті тексерілген тапсырмалар тестке қосылады.</p></div>') + historyMarkup();
+      return `<article class="quiz-start-card"><div class="quiz-card-top"><span class="subject-badge">Қазақстан тарихы</span><span>${escape(quiz.grade)}-сынып</span></div><h3>${escape(quiz.title)}</h3><p>Түпнұсқаның ${quiz.questions.length} сұрағынан тұратын жаттығу. Жауаптар ресми кілтпен салыстырылады.</p><div class="quiz-card-facts"><span>${quiz.questions.length} сұрақ</span><span>${escape(quiz.durationMinutes)} минут</span><span>${max} балл</span></div><div class="quiz-card-year">${escape(quiz.year)} · ${quiz.language === 'kk' ? 'Қазақша' : quiz.language === 'ru' ? 'Орысша' : 'Түпнұсқа тілінде'}</div><button class="button button-dark" data-quiz-choose="${escape(quiz.id)}">Тестті бастау <span aria-hidden="true">→</span></button></article>`;
+    }).join('')}</div><p class="quiz-mode-notice">${teacherAvailable ? 'Өзіндік дайындықты немесе келісіміңмен нәтижені мұғалімге жіберу режимін таңдауға болады.' : 'Қазір өзіндік дайындық қолжетімді. Мұғалімге Telegram арқылы жіберу әлі қосылмаған.'}</p>${coverageNote}` : '<div class="quiz-empty"><h3>Тарих тесттері әзірге жүктелмеді</h3><p>Тек Дарынның ресми жауап кілтімен салыстырылған тарих тапсырмалары тестке қосылады.</p></div>') + historyMarkup();
     root.querySelectorAll('[data-quiz-choose]').forEach(button => button.addEventListener('click', () => {
       state.current = state.quizzes.find(q => q.id === button.dataset.quizChoose);
       state.mode = 'self'; state.status = 'setup'; state.error = ''; state.turnstileToken = '';
@@ -103,9 +105,15 @@
     });
   }
 
+  function sourceNotesMarkup(quiz) {
+    const notes = [quiz.sourceNote, ...(Array.isArray(quiz.sourceNotes) ? quiz.sourceNotes : [])]
+      .filter(note => typeof note === 'string' && note.trim());
+    return notes.length ? `<div class="quiz-source-note"><b>Түпнұсқа туралы ескерту</b>${[...new Set(notes)].map(note => `<p>${escape(note)}</p>`).join('')}</div>` : '';
+  }
+
   function renderSetup() {
     const quiz = state.current;
-    root.innerHTML = header() + `<div class="quiz-setup"><button class="quiz-text-button" id="quiz-back">← Тесттерге оралу</button><h3>${escape(quiz.title)}</h3><div class="quiz-setup-info"><span>${quiz.questions.length} сұрақ</span><span>${escape(quiz.durationMinutes)} минут</span><span>Бір сұраққа ${escape(quiz.questions[0].points)} балл</span></div><p>Бастағаннан кейін уақыт есептеледі. Сұрақтарға кез келген ретпен жауап бере аласың. Соңында нәтижені және ресми дұрыс жауаптарды көресің.</p><form id="quiz-setup-form"><label class="quiz-mode-choice"><input type="radio" name="quiz-mode" value="self" ${state.mode === 'self' ? 'checked' : ''}><span><b>Өзіндік дайындық</b><small>Нәтиже тек осы браузерде қалады.</small></span></label>${teacherAvailable ? `<label class="quiz-mode-choice"><input type="radio" name="quiz-mode" value="teacher" ${state.mode === 'teacher' ? 'checked' : ''}><span><b>Нәтижені мұғалімге жіберу</b><small>Тест аяқталғанда балл Telegram арқылы жіберіледі.</small></span></label>` : '<p class="quiz-mode-notice">Мұғалімге жіберу әлі қосылмаған. Өзіндік дайындықты бастауға болады.</p>'}<div id="quiz-teacher-settings" ${state.mode === 'teacher' ? '' : 'hidden'}><label class="quiz-input-label" for="quiz-student-code">Оқушы коды</label><input id="quiz-student-code" name="studentCode" type="text" autocomplete="off" minlength="2" maxlength="30" placeholder="Мысалы, 5A_12" ${state.mode === 'teacher' ? 'required' : ''}><p class="quiz-field-help">Телефон, ЖСН немесе толық аты-жөніңді жазба. Мұғалімге таныс қысқа код жеткілікті.</p><label class="quiz-consent"><input id="quiz-consent" type="checkbox" ${state.mode === 'teacher' ? 'required' : ''}>Нәтижені мұғалімге Telegram арқылы жіберуге келісемін</label><div id="quiz-turnstile"></div><p class="quiz-field-help">Жіберілетін деректер: оқушы коды, сынып, тест атауы, жиналған балл және орындаған уақыт.</p></div><div class="quiz-error" id="quiz-setup-error" role="alert" ${state.error ? '' : 'hidden'}>${escape(state.error)}</div><div class="quiz-setup-actions"><button type="submit" class="button button-orange" id="quiz-start-button">Дайынмын, бастаймын →</button></div></form></div>`;
+    root.innerHTML = header() + `<div class="quiz-setup"><button class="quiz-text-button" id="quiz-back">← Тесттерге оралу</button><h3>${escape(quiz.title)}</h3><div class="quiz-setup-info"><span>${quiz.questions.length} сұрақ</span><span>${escape(quiz.durationMinutes)} минут</span><span>Ең жоғары балл: ${quiz.questions.reduce((sum, question) => sum + Number(question.points), 0)}</span></div>${sourceNotesMarkup(quiz)}<p>Бастағаннан кейін уақыт есептеледі. Сұрақтарға кез келген ретпен жауап бере аласың. Соңында нәтижені және ресми дұрыс жауаптарды көресің.</p><form id="quiz-setup-form"><label class="quiz-mode-choice"><input type="radio" name="quiz-mode" value="self" ${state.mode === 'self' ? 'checked' : ''}><span><b>Өзіндік дайындық</b><small>Нәтиже тек осы браузерде қалады.</small></span></label>${teacherAvailable ? `<label class="quiz-mode-choice"><input type="radio" name="quiz-mode" value="teacher" ${state.mode === 'teacher' ? 'checked' : ''}><span><b>Нәтижені мұғалімге жіберу</b><small>Тест аяқталғанда балл Telegram арқылы жіберіледі.</small></span></label>` : '<p class="quiz-mode-notice">Мұғалімге жіберу әлі қосылмаған. Өзіндік дайындықты бастауға болады.</p>'}<div id="quiz-teacher-settings" ${state.mode === 'teacher' ? '' : 'hidden'}><label class="quiz-input-label" for="quiz-student-code">Оқушы коды</label><input id="quiz-student-code" name="studentCode" type="text" autocomplete="off" minlength="2" maxlength="30" placeholder="Мысалы, 5A_12" ${state.mode === 'teacher' ? 'required' : ''}><p class="quiz-field-help">Телефон, ЖСН немесе толық аты-жөніңді жазба. Мұғалімге таныс қысқа код жеткілікті.</p><label class="quiz-consent"><input id="quiz-consent" type="checkbox" ${state.mode === 'teacher' ? 'required' : ''}>Нәтижені мұғалімге Telegram арқылы жіберуге келісемін</label><div id="quiz-turnstile"></div><p class="quiz-field-help">Жіберілетін деректер: оқушы коды, сынып, тест атауы, жиналған балл және орындаған уақыт.</p></div><div class="quiz-error" id="quiz-setup-error" role="alert" ${state.error ? '' : 'hidden'}>${escape(state.error)}</div><div class="quiz-setup-actions"><button type="submit" class="button button-orange" id="quiz-start-button">Дайынмын, бастаймын →</button></div></form></div>`;
     root.querySelector('#quiz-back').onclick = () => { state.current = null; state.status = 'home'; renderHome(); };
     root.querySelectorAll('[name=quiz-mode]').forEach(input => input.addEventListener('change', () => {
       state.mode = input.value;
@@ -210,9 +218,22 @@
 
   function answeredCount() { return state.current.questions.filter(q => state.answers[q.id]).length; }
 
+  function questionMarkup(question) {
+    const table = question.sourceTable;
+    const hasTable = table && Array.isArray(table.headers) && table.headers.length > 0 &&
+      table.headers.every(header => typeof header === 'string') && Array.isArray(table.rows) &&
+      table.rows.length > 0 && table.rows.every(row => typeof row.optionId === 'string' &&
+        Array.isArray(row.cells) && row.cells.length === table.headers.length &&
+        row.cells.every(cell => typeof cell === 'string'));
+    if (!hasTable) return `<div class="quiz-question-text">${escape(question.text)}</div>`;
+    const introduction = typeof question.tableQuestionText === 'string' ? question.tableQuestionText : question.text;
+    const caption = `${question.number || ''}-сұрақтың түпнұсқа кестесі`;
+    return `<div class="quiz-question-text">${escape(introduction)}</div><div class="quiz-source-table" role="region" aria-label="${escape(caption)}" tabindex="0"><table><caption>${escape(caption)}</caption><thead><tr><th scope="col">Нұсқа</th>${table.headers.map(header => `<th scope="col">${escape(header)}</th>`).join('')}</tr></thead><tbody>${table.rows.map(row => `<tr><th scope="row">${escape(row.optionId)}</th>${row.cells.map(cell => `<td>${escape(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+
   function renderActive(focusQuestion = false) {
     const quiz = state.current, question = quiz.questions[state.position], count = answeredCount();
-    root.innerHTML = `<div class="quiz-running-heading"><div><div class="eyebrow muted">${state.mode === 'teacher' ? 'МҰҒАЛІМГЕ ЖІБЕРІЛЕТІН ТЕСТ' : 'ӨЗІНДІК ДАЙЫНДЫҚ'}</div><h2>${escape(quiz.title)}</h2></div><div class="quiz-clock" aria-label="Қалған уақыт"><span>Қалған уақыт</span><strong id="quiz-clock-value">${timeLabel(Date.parse(state.expiresAt) - Date.now())}</strong></div></div><div class="quiz-run-layout"><aside class="quiz-question-map"><div class="quiz-map-heading"><b>Сұрақтар</b><span>${count} / ${quiz.questions.length}</span></div><div class="quiz-question-grid">${quiz.questions.map((q, index) => `<button class="${state.position === index ? 'current' : ''} ${state.answers[q.id] ? 'answered' : ''}" data-quiz-question="${index}" aria-label="${index + 1}-сұрақ${state.answers[q.id] ? ', жауап берілген' : ''}" ${state.position === index ? 'aria-current="true"' : ''}>${index + 1}</button>`).join('')}</div><div class="quiz-map-legend"><span>● Жауап берілген</span><span>○ Жауап берілмеген</span></div><button class="button button-dark" id="quiz-request-finish">Тестті аяқтау</button><p>${state.mode === 'teacher' ? 'Аяқтағанда нәтижені сервер есептеп, мұғалімге жібереді.' : 'Өзіндік нәтиже мұғалімге жіберілмейді.'}</p></aside><div class="quiz-question-card"><div class="quiz-question-top"><span>${state.position + 1} / ${quiz.questions.length} сұрақ</span><span>${escape(question.points)} балл</span></div><h3 id="quiz-question-heading" tabindex="-1">${escape(question.number || state.position + 1)}-сұрақ</h3><div class="quiz-question-text">${escape(question.text)}</div><fieldset class="quiz-options"><legend class="quiz-sr-only">Жауап нұсқасын таңдаңыз</legend>${question.options.map((option, index) => `<label class="quiz-option ${state.answers[question.id] === option.id ? 'selected' : ''}"><input type="radio" name="quiz-answer" value="${escape(option.id)}" id="quiz-option-${index}" ${state.answers[question.id] === option.id ? 'checked' : ''}><span class="quiz-option-letter">${escape(option.id)}</span><span>${escape(option.text)}</span></label>`).join('')}</fieldset><div class="quiz-question-actions"><button class="button button-outline" id="quiz-previous" ${state.position === 0 ? 'disabled' : ''}>← Алдыңғы</button><button class="quiz-text-button" id="quiz-clear-answer" ${state.answers[question.id] ? '' : 'disabled'}>Жауапты өшіру</button><button class="button button-dark" id="quiz-next" ${state.position === quiz.questions.length - 1 ? 'hidden' : ''}>Келесі →</button>${state.position === quiz.questions.length - 1 ? '<button class="button button-orange" id="quiz-last-finish">Аяқтау →</button>' : ''}</div></div></div>${state.confirm ? `<div class="quiz-finish-confirm" role="alert"><div><h3>Тестті аяқтауға дайынсың ба?</h3><p>${quiz.questions.length - count ? `${quiz.questions.length - count} сұраққа жауап берілмеген. Оларға 0 балл есептеледі.` : 'Барлық сұраққа жауап берілді.'} ${state.mode === 'teacher' ? 'Нәтиже мұғалімге жіберіледі.' : 'Нәтиже тек осы браузерде сақталады.'}</p></div><div><button class="button button-outline" id="quiz-continue">Жалғастыру</button><button class="button button-orange" id="quiz-confirm-finish">Иә, аяқтау</button></div></div>` : ''}`;
+    root.innerHTML = `<div class="quiz-running-heading"><div><div class="eyebrow muted">${state.mode === 'teacher' ? 'МҰҒАЛІМГЕ ЖІБЕРІЛЕТІН ТЕСТ' : 'ӨЗІНДІК ДАЙЫНДЫҚ'}</div><h2>${escape(quiz.title)}</h2></div><div class="quiz-clock" aria-label="Қалған уақыт"><span>Қалған уақыт</span><strong id="quiz-clock-value">${timeLabel(Date.parse(state.expiresAt) - Date.now())}</strong></div></div><div class="quiz-run-layout"><aside class="quiz-question-map"><div class="quiz-map-heading"><b>Сұрақтар</b><span>${count} / ${quiz.questions.length}</span></div><div class="quiz-question-grid">${quiz.questions.map((q, index) => `<button class="${state.position === index ? 'current' : ''} ${state.answers[q.id] ? 'answered' : ''}" data-quiz-question="${index}" aria-label="${index + 1}-сұрақ${state.answers[q.id] ? ', жауап берілген' : ''}" ${state.position === index ? 'aria-current="true"' : ''}>${index + 1}</button>`).join('')}</div><div class="quiz-map-legend"><span>● Жауап берілген</span><span>○ Жауап берілмеген</span></div><button class="button button-dark" id="quiz-request-finish">Тестті аяқтау</button><p>${state.mode === 'teacher' ? 'Аяқтағанда нәтижені сервер есептеп, мұғалімге жібереді.' : 'Өзіндік нәтиже мұғалімге жіберілмейді.'}</p></aside><div class="quiz-question-card"><div class="quiz-question-top"><span>${state.position + 1} / ${quiz.questions.length} сұрақ</span><span>${escape(question.points)} балл</span></div><h3 id="quiz-question-heading" tabindex="-1">${escape(question.number || state.position + 1)}-сұрақ</h3>${questionMarkup(question)}<fieldset class="quiz-options"><legend class="quiz-sr-only">Жауап нұсқасын таңдаңыз</legend>${question.options.map((option, index) => `<label class="quiz-option ${state.answers[question.id] === option.id ? 'selected' : ''}"><input type="radio" name="quiz-answer" value="${escape(option.id)}" id="quiz-option-${index}" ${state.answers[question.id] === option.id ? 'checked' : ''}><span class="quiz-option-letter">${escape(option.id)}</span><span>${escape(option.text)}</span></label>`).join('')}</fieldset><div class="quiz-question-actions"><button class="button button-outline" id="quiz-previous" ${state.position === 0 ? 'disabled' : ''}>← Алдыңғы</button><button class="quiz-text-button" id="quiz-clear-answer" ${state.answers[question.id] ? '' : 'disabled'}>Жауапты өшіру</button><button class="button button-dark" id="quiz-next" ${state.position === quiz.questions.length - 1 ? 'hidden' : ''}>Келесі →</button>${state.position === quiz.questions.length - 1 ? '<button class="button button-orange" id="quiz-last-finish">Аяқтау →</button>' : ''}</div></div></div>${state.confirm ? `<div class="quiz-finish-confirm" role="alert"><div><h3>Тестті аяқтауға дайынсың ба?</h3><p>${quiz.questions.length - count ? `${quiz.questions.length - count} сұраққа жауап берілмеген. Оларға 0 балл есептеледі.` : 'Барлық сұраққа жауап берілді.'} ${state.mode === 'teacher' ? 'Нәтиже мұғалімге жіберіледі.' : 'Нәтиже тек осы браузерде сақталады.'}</p></div><div><button class="button button-outline" id="quiz-continue">Жалғастыру</button><button class="button button-orange" id="quiz-confirm-finish">Иә, аяқтау</button></div></div>` : ''}`;
     root.querySelectorAll('[data-quiz-question]').forEach(button => button.onclick = () => navigate(Number(button.dataset.quizQuestion)));
     root.querySelectorAll('[name=quiz-answer]').forEach(input => input.addEventListener('change', () => {
       state.answers[question.id] = input.value; saveActive(); renderActive();
@@ -291,7 +312,7 @@
     const result = state.result, quiz = state.current;
     const unanswered = quiz.questions.length - answeredCount();
     const notification = notificationLabel();
-    root.innerHTML = header() + `<div class="quiz-result"><div class="quiz-result-main"><span class="quiz-result-star" aria-hidden="true">✦</span><div class="eyebrow muted">${state.expired ? 'УАҚЫТ АЯҚТАЛДЫ' : 'ТЕСТ АЯҚТАЛДЫ'}</div><h3>Әр талпыныс — алға қадам.</h3><p>${escape(quiz.title)}</p><div class="quiz-result-score"><strong>${escape(result.score)}</strong><span>/ ${escape(result.maxScore)} балл</span></div><div class="quiz-result-facts"><span><b>${escape(result.correctCount)}</b> дұрыс жауап</span><span><b>${quiz.questions.length - result.correctCount - unanswered}</b> қате жауап</span><span><b>${unanswered}</b> жауап берілмеген</span></div></div><div class="quiz-notification ${notification.type}" role="status">${escape(notification.text)}</div><div class="quiz-result-actions"><button class="button button-dark" id="quiz-review">Жауаптарды талдау ↓</button><button class="button button-outline" id="quiz-return-home">Басқа тест таңдау</button></div><div id="quiz-review-panel" class="quiz-review-panel" hidden></div><div id="quiz-source-links" class="quiz-source-links"></div></div>`;
+    root.innerHTML = header() + `<div class="quiz-result"><div class="quiz-result-main"><span class="quiz-result-star" aria-hidden="true">✦</span><div class="eyebrow muted">${state.expired ? 'УАҚЫТ АЯҚТАЛДЫ' : 'ТЕСТ АЯҚТАЛДЫ'}</div><h3>Әр талпыныс — алға қадам.</h3><p>${escape(quiz.title)}</p><div class="quiz-result-score"><strong>${escape(result.score)}</strong><span>/ ${escape(result.maxScore)} балл</span></div><div class="quiz-result-facts"><span><b>${escape(result.correctCount)}</b> дұрыс жауап</span><span><b>${quiz.questions.length - result.correctCount - unanswered}</b> қате жауап</span><span><b>${unanswered}</b> жауап берілмеген</span></div></div><div class="quiz-notification ${notification.type}" role="status">${escape(notification.text)}</div><div class="quiz-result-actions"><button class="button button-dark" id="quiz-review">Жауаптарды талдау ↓</button><button class="button button-outline" id="quiz-return-home">Басқа тест таңдау</button></div><div id="quiz-review-panel" class="quiz-review-panel" hidden></div>${sourceNotesMarkup(quiz)}<div id="quiz-source-links" class="quiz-source-links"></div></div>`;
     root.querySelector('#quiz-return-home').onclick = () => { state.current = null; state.result = null; state.status = 'home'; state.expired = false; renderHome(); };
     root.querySelector('#quiz-review').onclick = () => {
       const panel = root.querySelector('#quiz-review-panel');
@@ -307,7 +328,7 @@
     if (!key) { panel.innerHTML = '<p class="quiz-field-help">Ресми жауап кілті бұл браузерге жүктелмеді. Түпнұсқа дереккөзді төменнен қараңыз.</p>'; return; }
     panel.innerHTML = state.current.questions.map((question, index) => {
       const correct = key[question.id], chosen = state.answers[question.id], isCorrect = chosen === correct;
-      return `<details class="quiz-review-question ${isCorrect ? 'is-correct' : 'is-incorrect'}"><summary><span>${index + 1}-сұрақ</span><span>${isCorrect ? '✓ Дұрыс' : chosen ? 'Қате' : 'Жауап берілмеген'}</span></summary><div class="quiz-question-text">${escape(question.text)}</div><div class="quiz-review-options">${question.options.map(option => `<p class="${option.id === correct ? 'official-correct' : ''}"><b>${escape(option.id)}.</b> ${escape(option.text)}${option.id === correct ? ' <span>✓ Ресми дұрыс жауап</span>' : ''}${option.id === chosen && option.id !== correct ? ' <span>← Сенің жауабың</span>' : ''}</p>`).join('')}</div></details>`;
+      return `<details class="quiz-review-question ${isCorrect ? 'is-correct' : 'is-incorrect'}"><summary><span>${index + 1}-сұрақ</span><span>${isCorrect ? '✓ Дұрыс' : chosen ? 'Қате' : 'Жауап берілмеген'}</span></summary>${questionMarkup(question)}<div class="quiz-review-options">${question.options.map(option => `<p class="${option.id === correct ? 'official-correct' : ''}"><b>${escape(option.id)}.</b> ${escape(option.text)}${option.id === correct ? ' <span>✓ Ресми дұрыс жауап</span>' : ''}${option.id === chosen && option.id !== correct ? ' <span>← Сенің жауабың</span>' : ''}</p>`).join('')}</div></details>`;
     }).join('');
   }
 
@@ -327,7 +348,7 @@
         const file = String(document.fileUrl || '');
         if (!/^materials\/[A-Za-z0-9._/-]+$/.test(file) || file.includes('..')) return '';
         return `<a href="${escape(file)}" target="_blank" rel="noopener noreferrer">${index < (quiz.sourceDocumentIds || []).length ? 'Тапсырмалардың түпнұсқасы' : 'Ресми жауап кілті'} (${escape(String(document.format || '').toUpperCase())}) ↗</a>`;
-      }).join('')}<small>Мәтін мен жауаптар осы ресми құжаттардан алынған. Тест — түпнұсқа тапсырмалардың бір бөлігі.</small>`;
+      }).join('')}<small>Мәтін мен жауаптар осы ресми құжаттардан алынған. Тест сұрақтары тек «Дарын» жариялаған Қазақстан тарихы құжаттарынан алынған.</small>`;
     } catch { /* Main result remains available without the provenance index. */ }
   }
 
@@ -358,7 +379,7 @@
       state.status = 'home'; renderHome();
     } catch {
       state.status = 'error';
-      root.innerHTML = header() + '<div class="quiz-empty"><h3>Тесттерді жүктеу мүмкін болмады</h3><p>Интернет байланысын тексеріп, бетті қайта жүктеңіз. Архив кітапханасын пайдалануға болады.</p></div>';
+      root.innerHTML = header() + '<div class="quiz-empty"><h3>Тарих тесттерін жүктеу мүмкін болмады</h3><p>Интернет байланысын тексеріп, бетті қайта жүктеңіз. Архив кітапханасын пайдалануға болады.</p></div>';
     }
   }
 

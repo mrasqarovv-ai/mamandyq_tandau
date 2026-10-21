@@ -84,6 +84,8 @@ def validate_archive(raw: object) -> dict:
             raise ValueError(f"{field}: объект болуы керек")
         for key in ("id", "title", "subject", "year", "stage"):
             string(record.get(key), f"{field}.{key}")
+        if record['subject'] != 'history':
+            raise ValueError('Бұл жинаққа тек Қазақстан тарихы тапсырмалары енгізіледі.')
         string(record.get("text", ""), f"{field}.text", required=False)
         if record["id"] in identifiers:
             raise ValueError(f"{field}.id: қайталанған құжат идентификаторы")
@@ -300,9 +302,9 @@ def build_document(archive: dict, output: Path, archive_path: Path | None = None
     update = OxmlElement("w:updateFields")
     update.set(qn("w:val"), "true")
     document.settings.element.append(update)
-    document.core_properties.title = "Daryn · Олимпиада тапсырмалары"
-    document.core_properties.subject = "5–8-сыныптарға арналған ресми тапсырмалар жинағы"
-    document.add_heading("5–8-СЫНЫПТАРҒА АРНАЛҒАН РЕСПУБЛИКАЛЫҚ ОЛИМПИАДА ТАПСЫРМАЛАРЫНЫҢ ЖИНАҒЫ (2020–2027)", 0)
+    document.core_properties.title = "Daryn · Қазақстан тарихы"
+    document.core_properties.subject = "5–8-сыныптарға арналған Қазақстан тарихы тапсырмалары"
+    document.add_heading("ҚАЗАҚСТАН ТАРИХЫ: 5–8-СЫНЫПТАРҒА АРНАЛҒАН ОЛИМПИАДА ТАПСЫРМАЛАРЫНЫҢ ЖИНАҒЫ (2020–2027)", 0)
     document.add_paragraph("Ресми дереккөздерден нақты алынған материалдар · Ішінара архив")
     document.add_paragraph(f"Архив жаңартылған уақыт: {archive['updatedAt']}")
     document.add_paragraph(f"Жинақтағы құжат жазбаларының саны: {len(archive['documents'])}")

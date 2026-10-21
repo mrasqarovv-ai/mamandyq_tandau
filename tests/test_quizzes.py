@@ -39,7 +39,7 @@ class VerifiedQuizzes(unittest.TestCase):
             self.assertTrue(quiz['answerSourceIds'])
             for source_id in quiz['answerSourceIds']:
                 key = self.documents[source_id]
-                self.assertEqual(key['grade'],quiz['grade'])
+                self.assertIn(quiz['grade'], key.get('grades') or [key.get('grade')])
                 self.assertEqual(key['year'],quiz['year'])
                 self.assertEqual(key['stage'],quiz['stage'])
                 self.assertEqual(key['subject'],quiz['subject'])

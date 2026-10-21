@@ -78,6 +78,7 @@ export function publicQuiz(quiz) {
     durationMinutes: quiz.durationMinutes,
     sourceDocumentIds: quiz.sourceDocumentIds || [],
     answerSourceIds: quiz.answerSourceIds || [],
+    sourceNotes: quiz.sourceNotes || [],
     questionCount: quiz.questions.length,
     maxScore: quiz.questions.reduce((sum, question) => sum + (question.points ?? 1), 0),
     questions: quiz.questions.map(question => ({
@@ -85,6 +86,7 @@ export function publicQuiz(quiz) {
       points: question.points ?? 1,
       options: question.options.map(option => ({ id: option.id, text: option.text })),
       source: question.source,
+      ...(question.sourceTable ? { sourceTable: question.sourceTable, tableQuestionText: question.tableQuestionText } : {}),
     })),
   };
 }

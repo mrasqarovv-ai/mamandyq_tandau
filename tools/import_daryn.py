@@ -279,22 +279,18 @@ class Importer:
         identifier = digest[:20]
         if digest in self.documents_seen:
             return
-        self.documents_seen.add(digest)
-        target = self.materials / f"{identifier}{path.suffix.lower()}"
-        if target.exists() and target.read_bytes() != data:
-            # Preserve any pre-existing file even in a truncated-ID collision.
-            identifier = digest
-            target = self.materials / f"{identifier}{path.suffix.lower()}"
-        if path.resolve() != target.resolve():
-            shutil.copyfile(path, target)
+        metadata = infer_metadata(label, source)
+        # The public site is dedicated exclusively to Kazakhstan history.
+        # Do not copy unrelated downloads into the publicly served materials/.
+        if metadata['subject'] not in ('history', 'other'):
+            return
         try:
-            text = extract_text(target)
+            text = extract_text(path)
             if not text:
                 self.error(source_url, "No machine-readable text; original retained. Scan requires OCR/manual verification.")
         except (ValueError, RuntimeError, OSError, subprocess.TimeoutExpired, zipfile.BadZipFile, ET.ParseError) as exc:
             text = ""
             self.error(source_url, str(exc))
-        metadata = infer_metadata(label, source)
         if text:
             header_metadata = infer_metadata(text[:400], source)
             natural_science = bool(re.search(r"жаратылыстан|естествозн|natural science", label, re.I))
@@ -303,6 +299,17 @@ class Importer:
             if metadata["grade"] is None and header_metadata["grade"] is not None:
                 metadata["grade"] = header_metadata["grade"]
         metadata.update(material_metadata(label, text, metadata["subject"]))
+        if metadata['subject'] != 'history':
+            return
+        if not re.search(r'қазақстан(?:ның)?\s+тарих|истори[яи]\s+казахстан|kazakhstan\s+history|history\s+of\s+kazakhstan', label + '\n' + text[:1600], re.I):
+            return
+        self.documents_seen.add(digest)
+        target = self.materials / f"{identifier}{path.suffix.lower()}"
+        if target.exists() and target.read_bytes() != data:
+            identifier = digest
+            target = self.materials / f"{identifier}{path.suffix.lower()}"
+        if path.resolve() != target.resolve():
+            shutil.copyfile(path, target)
         metadata["grades"] = [metadata["grade"]] if metadata["grade"] is not None else []
         if not metadata["grades"]:
             grade_ranges = re.findall(r"\b([5-8])\s*[-–—]\s*([5-8])\s*(?:сынып|класс|grade)", label, re.I)
