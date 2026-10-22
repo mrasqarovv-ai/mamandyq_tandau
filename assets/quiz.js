@@ -76,7 +76,7 @@
   }
 
   function header() {
-    return '<div class="section-heading"><div><div class="eyebrow muted">ҚАЗАҚСТАН ТАРИХЫНАН БІЛІМІҢДІ БАЙҚА</div><h2>Өзіңді сынап көр<span>.</span></h2><p>Дарынның тарих тапсырмалары. Ресми жауап кілті. Өз қарқыныңдағы дайындық.</p></div><span class="status-pill">Дарынның түпнұсқа материалдары</span></div>';
+    return '<div class="section-heading"><div><div class="eyebrow muted">РЕСМИ КІЛТПЕН БАҒАЛАУ</div><h2>6 тексерілген тест<span>.</span></h2><p>Дарынның тарих тапсырмалары. Жауаптар ресми кілтпен салыстырылып, балл есептеледі.</p></div><a class="text-link" href="#assignments">Барлық 18 жинақты орындау ↓</a></div>';
   }
 
   function historyMarkup() {
@@ -88,7 +88,7 @@
   function renderHome() {
     removeChallenge();
     const archiveOnlyGrades = [5, 6, 7, 8].filter(grade => !state.quizzes.some(quiz => quiz.grade === grade));
-    const coverageNote = archiveOnlyGrades.length ? `<p class="quiz-scope-note">${archiveOnlyGrades.join('–')}-сынып материалдарын <a href="#archive">Қазақстан тарихы архивінен</a> қара. Ресми кілті расталмаған топтамаға автоматты баға қойылмайды.</p>` : '';
+    const coverageNote = archiveOnlyGrades.length ? `<p class="quiz-scope-note">${archiveOnlyGrades.join('–')}-сынып материалдарын <a href="#assignments">жинақтар бөлімінде орындап</a>, жауаптарыңды сақтай аласың. Ресми кілті расталмаған топтамаға автоматты баға қойылмайды.</p>` : '';
     root.innerHTML = header() + (state.quizzes.length ? `<div class="quiz-card-grid">${state.quizzes.map(quiz => {
       const max = quiz.questions.reduce((sum, q) => sum + Number(q.points), 0);
       return `<article class="quiz-start-card"><div class="quiz-card-top"><span class="subject-badge">Қазақстан тарихы</span><span>${escape(quiz.grade)}-сынып</span></div><h3>${escape(quiz.title)}</h3><p>Түпнұсқаның ${quiz.questions.length} сұрағынан тұратын жаттығу. Жауаптар ресми кілтпен салыстырылады.</p><div class="quiz-card-facts"><span>${quiz.questions.length} сұрақ</span><span>${escape(quiz.durationMinutes)} минут</span><span>${max} балл</span></div><div class="quiz-card-year">${escape(quiz.year)} · ${quiz.language === 'kk' ? 'Қазақша' : quiz.language === 'ru' ? 'Орысша' : 'Түпнұсқа тілінде'}</div><button class="button button-dark" data-quiz-choose="${escape(quiz.id)}">Тестті бастау <span aria-hidden="true">→</span></button></article>`;
@@ -383,5 +383,18 @@
     }
   }
 
+  window.ORLEU_QUIZZES = {
+    open(id) {
+      root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (['active', 'submitting', 'submission-error'].includes(state.status)) return false;
+      const quiz = state.quizzes.find(item => item.id === id);
+      if (!quiz) return false;
+      removeChallenge();
+      state.current = quiz; state.mode = 'self'; state.status = 'setup';
+      state.error = ''; state.turnstileToken = ''; state.result = null;
+      renderSetup();
+      return true;
+    }
+  };
   initialise();
 })();
